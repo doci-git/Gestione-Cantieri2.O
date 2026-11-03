@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <title>Gestione Cantieri Edili</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-locked">
+    <!-- ═══════════════ PASSWORD GATE ═══════════════ -->
+    <section
+      class="password-gate"
+      id="passwordGate"
+      aria-label="Accesso protetto"
+    >
+      <form class="password-gate-card" id="passwordForm">
+        <div class="password-gate-icon" aria-hidden="true">🔒</div>
+        <h2>Gestione Cantieri</h2>
+        <p>Inserisci la password per accedere.</p>
+        <input
+          type="password"
+          id="accessPassword"
+          placeholder="Password"
+          autocomplete="current-password"
+          required
+          autofocus
+        />
+        <button type="submit">Accedi</button>
+        <p
+          class="password-error"
+          id="passwordError"
+          role="alert"
+          aria-live="polite"
+        ></p>
+      </form>
+    </section>
+
+    <!-- ═══════════════ HEADER ═══════════════ -->
+    <header class="app-header" id="appHeader">
+      <div class="logo-icon">🏗️</div>
+      <h1 id="headerTitle">Cantieri</h1>
+      <span class="header-spacer"></span>
+      <button
+        class="btn-header"
+        id="btnWarehouse"
+        type="button"
+        title="Apri magazzino"
+        aria-label="Apri Magazzino"
+      >
+        📦 Magazzino
+      </button>
+      <button class="btn-header" id="btnActivity" title="Storico attività">
+        🧾 Storico
+      </button>
+      <button class="btn-back hidden" id="btnBack" title="Torna alla lista">
+        ←
+      </button>
+      <button
+        class="btn-header hidden"
+        id="btnReportPdf"
+        title="Genera report PDF"
+        aria-label="Genera report PDF"
+      >
+        <span aria-hidden="true">📄</span
+        ><span class="header-action-label">PDF</span>
+      </button>
+      <button
+        class="btn-header hidden"
+        id="btnEditSite"
+        title="Modifica cantiere"
+        aria-label="Modifica cantiere"
+      >
+        <span aria-hidden="true">✏️</span
+        ><span class="header-action-label">Modifica</span>
+      </button>
+      <button
+        class="btn-header hidden"
+        id="btnDeleteSite"
+        title="Elimina cantiere"
+      >
+        🗑️
+      </button>
+    </header>
+
+    <!-- ═══════════════ MAIN ═══════════════ -->
+    <div class="main-container" id="mainContainer">
+      <!-- Dashboard View -->
+      <div id="dashboardView">
+        <div class="dashboard-stats" id="dashboardStats"></div>
+        <div class="section-title-row">
+          <h2>📋 Tutti i cantieri</h2>
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="🔍 Cerca cantiere o cliente..."
+          />
+        </div>
+        <div class="dashboard-tools" style="display: none">
+          <button
+            class="btn-sm btn-outline"
+            id="btnExportData"
+            title="Esporta copia di sicurezza"
+          >
+            ⬇️ Esporta backup
+          </button>
+          <button
+            class="btn-sm btn-outline"
+            id="btnImportData"
+            title="Ripristina una copia di sicurezza"
+          >
+            ⬆️ Ripristina backup
+          </button>
+          <input
+            type="file"
+            id="backupFileInput"
+            accept="application/json,.json"
+            hidden
+          />
+        </div>
+        <div class="sites-grid" id="sitesGrid"></div>
+        <div class="empty-state hidden" id="emptyState">
+          <div class="empty-icon">🏗️</div>
+          <p><strong>Nessun cantiere presente</strong></p>
+          <p style="color: var(--text-muted)">
+            Tocca il pulsante + per crearne uno
+          </p>
+        </div>
+      </div>
+
+      <!-- Warehouse View -->
+      <section id="warehouseView" class="hidden" aria-label="Magazzino">
+        <div class="section-title-row">
+          <h2>📦 Materiali disponibili</h2>
+          <button class="btn-sm btn-accent" id="btnAddWarehouseCategory" type="button">
+            + Categoria
+          </button>
+        </div>
+        <div class="warehouse-toolbar">
+          <input
+            type="search"
+            class="search-input"
+            id="warehouseSearch"
+            placeholder="🔍 Cerca materiale..."
+            aria-label="Cerca materiali"
+          />
+          <label class="warehouse-filter">
+            <input type="checkbox" id="warehouseExhaustedFilter" />
+            Solo esauriti
+          </label>
+        </div>
+        <div class="warehouse-heading">
+          <h2 id="warehouseSectionTitle">Categorie</h2>
+          <button class="warehouse-back hidden" id="btnWarehouseBack" type="button">
+            ← Categorie
+          </button>
+          <button
+            class="btn-sm btn-accent hidden"
+            id="btnAddWarehouseMaterial"
+            type="button"
+          >
+            + Materiale
+          </button>
+        </div>
+        <div class="warehouse-categories" id="warehouseCategories"></div>
+        <div class="warehouse-materials" id="warehouseMaterials"></div>
+        <div class="warehouse-empty hidden" id="warehouseEmpty"></div>
+      </section>
+
+      <!-- Site Detail View -->
+      <div id="detailView" class="hidden">
+        <div class="detail-summary-bar" id="detailSummaryBar"></div>
+        <nav class="detail-tabs" id="detailTabs" aria-label="Sezioni cantiere">
+          <button
+            class="detail-tab"
+            type="button"
+            data-detail-tab="accounting"
+            aria-pressed="true"
+          >
+            Contabilità
+          </button>
+          <button
+            class="detail-tab"
+            type="button"
+            data-detail-tab="overview"
+            aria-pressed="false"
+          >
+            Preventivo
+          </button>
+          <button
+            class="detail-tab"
+            type="button"
+            data-detail-tab="documents"
+            aria-pressed="false"
+          >
+            Documenti
+          </button>
+          <button
+            class="detail-tab"
+            type="button"
+            data-detail-tab="reminders"
+            aria-pressed="false"
+          >
+            Promemoria
+          </button>
+        </nav>
+        <div id="detailSections"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ FAB ═══════════════ -->
+    <button class="fab" id="fabAdd" title="Nuovo cantiere">+</button>
+
+    <!-- ═══════════════ MODAL ═══════════════ -->
+    <div
+      class="modal-overlay hidden"
+      id="modalOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+    >
+      <div class="modal-sheet" id="modalSheet">
+        <div class="modal-handle"></div>
+        <h3 id="modalTitle">Modale</h3>
+        <div id="modalBody"></div>
+        <button class="btn-full btn-save" id="modalSave">Salva</button>
+        <button class="btn-full btn-cancel" id="modalCancel">Annulla</button>
+      </div>
+    </div>
+
+    <div
+      class="photo-lightbox"
+      id="photoLightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Foto della spesa"
+      hidden
+    >
+      <button
+        class="photo-lightbox-close"
+        id="photoLightboxClose"
+        type="button"
+        aria-label="Chiudi foto"
+      >
+        ×
+      </button>
+      <img id="photoLightboxImage" alt="Foto ingrandita della spesa" />
+    </div>
+
+    <!-- ═══════════════ TOAST ═══════════════ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
